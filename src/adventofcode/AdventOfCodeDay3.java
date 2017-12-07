@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 /**
  * 
- * @author jaekel
+ * @author dridde
  *
  *         --- Day 3: Spiral Memory ---
  * 

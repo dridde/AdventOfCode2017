@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 /**
  * 
- * @author jaekel
+ * @author dridde
  *
  *         --- Day 4: High-Entropy Passphrases ---
  * 

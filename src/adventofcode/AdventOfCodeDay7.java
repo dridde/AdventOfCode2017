@@ -9,11 +9,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import com.sun.xml.internal.ws.util.StringUtils;
-
 /**
  * 
- * @author jaekel
+ * @author dridde
  *
  *--- Day 7: Recursive Circus ---
 
@@ -192,7 +190,7 @@ public class AdventOfCodeDay7 {
 /**
  * helper class for my prog map
  * 
- * @author jaekel
+ * @author dridde
  *
  */
 class Program {

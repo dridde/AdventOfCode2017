@@ -2,7 +2,8 @@ package adventofcode;
 
 /**
  * 
- * @author jaekel --- Day 5: A Maze of Twisty Trampolines, All Alike ---
+ * @author dridde 
+ * 			--- Day 5: A Maze of Twisty Trampolines, All Alike ---
  * 
  *         An urgent interrupt arrives from the CPU: it's trapped in a maze of
  *         jump instructions, and it would like assistance from any programs

@@ -2,7 +2,7 @@ package adventofcode;
 
 /**
  * 
- * @author jaekel
+ * @author dridde
  *
  *         --- Day 1: Inverse Captcha ---
  * 
