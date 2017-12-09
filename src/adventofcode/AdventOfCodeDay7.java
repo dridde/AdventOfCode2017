@@ -112,6 +112,7 @@ public class AdventOfCodeDay7 {
 				//we'll surely need this for part 2
 				progs.put(name, new Program(name, weight, holding));
 			}
+			br.close();
 		}
 
 		// find base program - the one nobody is holding

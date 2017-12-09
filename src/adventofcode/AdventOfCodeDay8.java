@@ -53,6 +53,7 @@ public class AdventOfCodeDay8 {
 			while ((line = br.readLine()) != null) {
 				parseLine(line);
 			}
+			br.close();
 		}
 		
 		//check for biggest value in registers
