@@ -99,137 +99,141 @@ public class AdventOfCodeDay18 {
 		// part 1 : 3188 // need to use long instead of int because of overflow
 		// that is not intended with 32bit ints
 
-		try {
-			part2(program);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		// 7112
+		part2(program);
+		// part 2 : 7112
 	}
 
-	static boolean prog0wait = false;
-	static boolean prog1wait = false;
-	static ArrayList<Long> queue0 = new ArrayList<>();
-	static ArrayList<Long> queue1 = new ArrayList<>();
-	static Map<String, Long> regs0 = new HashMap<>();
-	static Map<String, Long> regs1 = new HashMap<>();
+	private static void part2(ArrayList<String> program) {
 
-	private static void part2(ArrayList<String> program) throws InterruptedException {
+		boolean prog0wait = false;
+		boolean prog1wait = false;
+		ArrayList<Long> queue0 = new ArrayList<>();
+		ArrayList<Long> queue1 = new ArrayList<>();
+		Map<String, Long> regs0 = new HashMap<>();
+		Map<String, Long> regs1 = new HashMap<>();
+		regs0.put("p", 0L);
+		regs1.put("p", 1L);
 
-		Thread prog0 = new Thread(() -> {
-			regs0.put("p", 0L);
-			int pc = 0; // program counter
-			pc: while (pc < program.size()) {
-				String line = program.get(pc);
-				String[] split = line.split(" ");
-				String opCode = split[0];
-				String reg = split[1];
-				switch (opCode) {
+		int sndCount = 0;
+		int pc0 = 0; // program counter
+		int pc1 = 0; // program counter
+
+		pc: while (true) {
+
+			String line0 = program.get(pc0);
+			String[] split0 = line0.split(" ");
+			String opCode0 = split0[0];
+			String reg0 = split0[1];
+
+			String line1 = program.get(pc1);
+			String[] split1 = line1.split(" ");
+			String opCode1 = split1[0];
+			String reg1 = split1[1];
+			if (!prog0wait) {
+				switch (opCode0) {
 				case "snd":
-					queue1.add(get(reg, regs0));
+					queue1.add(get(reg0, regs0));
 					break;
 				case "set":
-					regs0.put(reg, get(split[2], regs0));
+					regs0.put(reg0, get(split0[2], regs0));
 					break;
 				case "add":
-					regs0.put(reg, get(reg, regs0) + get(split[2], regs0));
+					regs0.put(reg0, get(reg0, regs0) + get(split0[2], regs0));
 					break;
 				case "mul":
-					regs0.put(reg, get(reg, regs0) * get(split[2], regs0));
+					regs0.put(reg0, get(reg0, regs0) * get(split0[2], regs0));
 					break;
 				case "mod":
-					regs0.put(reg, get(reg, regs0) % get(split[2], regs0));
+					regs0.put(reg0, get(reg0, regs0) % get(split0[2], regs0));
 					break;
 				case "rcv":
-					while (queue0.isEmpty()) {
-						try {
-							Thread.sleep(10);
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						}
+					if (queue0.isEmpty()) {
 						prog0wait = true;
 						if (prog1wait && prog0wait) {
 							break pc;
 						}
+					} else {
+						regs0.put(reg0, queue0.remove(0));
 					}
-					prog0wait = false;
-					regs0.put(reg, queue0.remove(0));
 					break;
 				case "jgz":
-					if (get(reg, regs0) > 0) {
-						pc += get(split[2], regs0);
+					if (get(reg0, regs0) > 0) {
+						pc0 += get(split0[2], regs0);
 						continue;
 					}
 					break;
 				default:
 					break;
 				}
-				pc++;
+				if (!prog0wait)
+					pc0++;
+			} else {
+				if (queue0.isEmpty()) {
+					prog0wait = true;
+					if (prog1wait && prog0wait) {
+						break pc;
+					}
+				} else {
+					prog0wait = false;
+					regs0.put(reg0, queue0.remove(0));
+					pc0++;
+				}
 			}
 
-		});
-
-		Thread prog1 = new Thread(() -> {
-
-			regs1.put("p", 1L);
-			int sndCount = 0;
-			int pc = 0; // program counter
-			pc: while (pc < program.size()) {
-				String line = program.get(pc);
-				String[] split = line.split(" ");
-				String opCode = split[0];
-				String reg = split[1];
-				switch (opCode) {
+			if (!prog1wait) {
+				switch (opCode1) {
 				case "snd":
-					queue0.add(get(reg, regs1));
+					queue0.add(get(reg1, regs1));
 					sndCount++;
 					break;
 				case "set":
-					regs1.put(reg, get(split[2], regs1));
+					regs1.put(reg1, get(split1[2], regs1));
 					break;
 				case "add":
-					regs1.put(reg, get(reg, regs1) + get(split[2], regs1));
+					regs1.put(reg1, get(reg1, regs1) + get(split1[2], regs1));
 					break;
 				case "mul":
-					regs1.put(reg, get(reg, regs1) * get(split[2], regs1));
+					regs1.put(reg1, get(reg1, regs1) * get(split1[2], regs1));
 					break;
 				case "mod":
-					regs1.put(reg, get(reg, regs1) % get(split[2], regs1));
+					regs1.put(reg1, get(reg1, regs1) % get(split1[2], regs1));
 					break;
 				case "rcv":
-					while (queue1.isEmpty()) {
-						try {
-							Thread.sleep(10);
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						}
+					if (queue1.isEmpty()) {
 						prog1wait = true;
 						if (prog1wait && prog0wait) {
 							break pc;
 						}
+					} else {
+						prog1wait = false;
+						regs1.put(reg1, queue1.remove(0));
 					}
-					prog1wait = false;
-					regs1.put(reg, queue1.remove(0));
 					break;
 				case "jgz":
-					if (get(reg, regs1) > 0) {
-						pc += get(split[2], regs1);
+					if (get(reg1, regs1) > 0) {
+						pc1 += get(split1[2], regs1);
 						continue;
 					}
 					break;
 				default:
 					break;
 				}
-				pc++;
+				if (!prog1wait)
+					pc1++;
+			} else {
+				if (queue1.isEmpty()) {
+					prog1wait = true;
+					if (prog1wait && prog0wait) {
+						break pc;
+					}
+				} else {
+					prog1wait = false;
+					regs1.put(reg1, queue1.remove(0));
+					pc1++;
+				}
 			}
-			System.out.println("Prog 1 send counter: " + sndCount);
-		});
-
-		prog0.start();
-		prog1.start();
-		prog0.join();
-		prog1.join();
-
+		}
+		System.out.println("Prog 1 send counter: " + sndCount);
 	}
 
 	private static void part1(ArrayList<String> program) {
