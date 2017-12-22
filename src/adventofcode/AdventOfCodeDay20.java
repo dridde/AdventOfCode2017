@@ -5,7 +5,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class AdventOfCodeDay20 {
 
@@ -52,8 +54,21 @@ public class AdventOfCodeDay20 {
 					minDistName = p.getpName();
 				}
 			}
-			//check for collisions
-			// TODO
+			
+			// check for collisions for part 2
+			Set<Particle> removeSet = new HashSet<>();
+			for (Particle p1 : particles) {
+				for (Particle p2 : particles) {
+					if (!p1.getpName().equals(p2.getpName())) {
+						if (p1.getPos().equals(p2.getPos())) {
+							removeSet.add(p1);
+							removeSet.add(p2);
+						}
+					}
+				}
+			}
+			//remove collided particles
+			particles.removeAll(removeSet);
 			
 			if (lastMinDistName.equals(minDistName)) {
 				stableCounter++;
@@ -63,7 +78,7 @@ public class AdventOfCodeDay20 {
 				lastMinDistName = minDistName;
 			}
 			// break if we are stable
-			if (stableCounter == 10000) {
+			if (stableCounter == 1000) {
 				break;
 			}
 		}
@@ -73,15 +88,17 @@ public class AdventOfCodeDay20 {
 		// 10000 particle376
 		// 100000 particle376
 		// 1000000 particle376
+		System.out.println(particles.size());
+		// 100 574
 	}
 
 }
 
 class Particle {
-	Tripel pos;
-	Tripel vel;
-	Tripel acc;
-	String pName;
+	private Tripel pos;
+	private Tripel vel;
+	private Tripel acc;
+	private String pName;
 
 	public Particle(String pName, Tripel pos, Tripel vel, Tripel acc) {
 		this.pos = pos;
@@ -110,10 +127,14 @@ class Particle {
 	long getDistanceToOrigin() {
 		return pos.getManhattenDist();
 	}
+
+	public Tripel getPos() {
+		return pos;
+	}
 }
 
 class Tripel {
-	long x, y, z;
+	private long x, y, z;
 
 	public Tripel(long x, long y, long z) {
 		this.x = x;
