@@ -107,65 +107,179 @@ public class AdventOfCodeDay21 {
 				String[] split = line.split(" => ");
 				Matrix source = new Matrix(split[0]);
 				Matrix target = new Matrix(split[1]);
+				// create all rotations/flipped roattions in rulebook
 				rulebook.put(source, target); // orig
-				source = rot90(source); // 90
+				source = Matrix.rot90(source); // 90
 				rulebook.put(source, target);
-				source = rot90(source);// 180
+				source = Matrix.rot90(source);// 180
 				rulebook.put(source, target);
-				source = rot90(source);// 270
+				source = Matrix.rot90(source);// 270
 				rulebook.put(source, target);
-				source = flip(source); // flip
+				source = Matrix.flip(source); // flip
 				rulebook.put(source, target);
-				source = rot90(source); // flip90
+				source = Matrix.rot90(source); // flip90
 				rulebook.put(source, target);
-				source = rot90(source);// flip180
+				source = Matrix.rot90(source);// flip180
 				rulebook.put(source, target);
-				source = rot90(source); // flip270
+				source = Matrix.rot90(source); // flip270
 				rulebook.put(source, target);
 			}
 		}
-
 		System.out.println("rulebook finished");
+
 		Matrix initial = new Matrix(".#./..#/###");
-		System.out.println(initial);
+		 System.out.println("Initial");
+		 initial.prettyPrint();
 
 		for (int iteration = 0; iteration < 18; iteration++) {
 			// split start Matrix
-			Matrix[][] matrices = split(initial);
-			// "improve" parts
+			Matrix[][] matrices = initial.split();
+			// "improve" parts, replace them by version from rulebook
 			for (int i = 0; i < matrices.length; i++) {
 				for (int j = 0; j < matrices.length; j++) {
 					matrices[i][j] = rulebook.get(matrices[i][j]);
 				}
 			}
 			// combine again
-			initial = combine(matrices);
+			initial = Matrix.combine(matrices);
 			// initial.prettyPrint();
 		}
 		System.out.println(initial.getActiveCount());
 		// iteration 5 : 176 pixels
-		// iteration 18:
+		// iteration 18: 2368161 pixels
+	}
+}
+
+/**
+ * helper class for printing, managing and storing stuff in hashmap don't want
+ * to fiddle around with arrays to much and growing arrays. so i use an array of
+ * matrices and grow/replace the matrices with their substitute and later get
+ * 
+ * @author dridde
+ *
+ */
+class Matrix {
+	private final char[][] data; // M-by-N array
+	private final int size; // size
+
+	// create M-by-N matrix based on string
+	public Matrix(String layout) {
+		String[] split = layout.split("/");
+		this.size = split.length;
+		data = new char[this.size][this.size];
+		for (int i = 0; i < this.size; i++) {
+			data[i] = split[i].toCharArray();
+		}
 	}
 
-	private static Matrix[][] split(Matrix initial) {
-		int size = initial.getSize();
+	// create matrix based on 2d array
+	public Matrix(char[][] data) {
+		this.size = data.length;
+		this.data = new char[size][size];
+		for (int i = 0; i < size; i++)
+			for (int j = 0; j < size; j++)
+				this.data[i][j] = data[i][j];
+	}
+
+	// create matrix based on matrix
+	public Matrix(Matrix input) {
+		this.size = input.size;
+		this.data = input.getData().clone();
+	}
+
+	public char[][] getData() {
+		return data;
+	}
+
+	public int getSize() {
+		return size;
+	}
+
+	public int getActiveCount() {
+		int count = 0;
+		for (int i = 0; i < size; i++) {
+			for (int j = 0; j < size; j++) {
+				if (data[i][j] == '#') {
+					count++;
+				}
+			}
+		}
+		return count;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + Arrays.deepHashCode(data);
+		result = prime * result + size;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Matrix other = (Matrix) obj;
+		if (!Arrays.deepEquals(data, other.data))
+			return false;
+		if (size != other.size)
+			return false;
+		return true;
+	}
+
+	public void prettyPrint() {
+		for (int i = 0; i < size; i++) {
+			StringBuilder sb = new StringBuilder();
+			for (int j = 0; j < size; j++) {
+				sb.append(data[i][j]);
+			}
+			System.out.println(sb.toString());
+		}
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < size; i++) {
+			for (int j = 0; j < size; j++) {
+				sb.append(data[i][j]);
+			}
+			if (i != size - 1) {
+				sb.append("/");
+			}
+		}
+		return sb.toString();
+	}
+
+	/**
+	 * split matrix up to array of 2x2 or 3x3 matrix
+	 * 
+	 * @param initial
+	 * @return
+	 */
+	public Matrix[][] split() {
 		int div = 2;
 		if (size % 2 == 0) {
 			div = 2;
 		} else if (size % 3 == 0) {
 			div = 3;
 		}
-		int i = size / div;
+		int i = this.size / div;
 		Matrix[][] matrices = new Matrix[i][i];
 
-		char[][] data = initial.getData();
-
 		char[][] newData = new char[div][div];
+		// create part data arrays for new matrices
 		for (int a = 0; a < i; a++) {
 			for (int b = 0; b < i; b++) {
+				// create actual part-matrix
 				for (int c = 0; c < div; c++) {
 					for (int d = 0; d < div; d++) {
-						newData[c][d] = data[(a * div) + c][(b * div) + d];
+						newData[c][d] = this.data[(a * div) + c][(b * div) + d];
 					}
 				}
 				matrices[a][b] = new Matrix(newData);
@@ -174,7 +288,13 @@ public class AdventOfCodeDay21 {
 		return matrices;
 	}
 
-	private static Matrix combine(Matrix[][] matrices) {
+	/**
+	 * combine matrix array to one new big matrix
+	 * 
+	 * @param matrices
+	 * @return
+	 */
+	public static Matrix combine(Matrix[][] matrices) {
 		int n = matrices.length;
 		int m = matrices[0][0].getSize();
 		char[][] newInput = new char[n * m][n * m];
@@ -193,18 +313,13 @@ public class AdventOfCodeDay21 {
 		return new Matrix(newInput);
 	}
 
-	private static Matrix flip(Matrix input) {
-		char[][] data = input.getData();
-		char[][] out = new char[data.length][data.length];
-		for (int x = 0; x < data.length; x++) {
-			for (int y = 0; y < data.length; y++) {
-				out[(data.length - 1) - x][y] = data[x][y];
-			}
-		}
-		return new Matrix(out);
-	}
-
-	private static Matrix rot90(Matrix input) {
+	/**
+	 * rotate matrix 90deg
+	 * 
+	 * @param input
+	 * @return
+	 */
+	public static Matrix rot90(Matrix input) {
 		int n = input.getSize();
 		char[][] data = input.getData();
 		char[][] newArray = new char[n][n];
@@ -215,104 +330,21 @@ public class AdventOfCodeDay21 {
 		}
 		return new Matrix(newArray);
 	}
-}
 
-class Matrix {
-	private final char[][] data; // M-by-N array
-	private final int n; // size
-
-	// create M-by-N matrix based on string
-	public Matrix(String layout) {
-		String[] split = layout.split("/");
-		this.n = split.length;
-		data = new char[this.n][this.n];
-		for (int i = 0; i < this.n; i++) {
-			data[i] = split[i].toCharArray();
-		}
-	}
-
-	// create matrix based on 2d array
-	public Matrix(char[][] data) {
-		this.n = data.length;
-		this.data = new char[n][n];
-		for (int i = 0; i < n; i++)
-			for (int j = 0; j < n; j++)
-				this.data[i][j] = data[i][j];
-	}
-
-	// create matrix based on matrix
-	public Matrix(Matrix input) {
-		this.n = input.n;
-		this.data = input.getData().clone();
-	}
-
-	public char[][] getData() {
-		return data;
-	}
-
-	public int getSize() {
-		return n;
-	}
-
-	public int getActiveCount() {
-		int count = 0;
-		for (int i = 0; i < n; i++) {
-			for (int j = 0; j < n; j++) {
-				if (data[i][j] == '#') {
-					count++;
-				}
+	/**
+	 * flip matrix on middle axis
+	 * 
+	 * @param input
+	 * @return
+	 */
+	public static Matrix flip(Matrix input) {
+		char[][] data = input.getData();
+		char[][] out = new char[data.length][data.length];
+		for (int x = 0; x < data.length; x++) {
+			for (int y = 0; y < data.length; y++) {
+				out[(data.length - 1) - x][y] = data[x][y];
 			}
 		}
-		return count;
+		return new Matrix(out);
 	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + Arrays.deepHashCode(data);
-		result = prime * result + n;
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Matrix other = (Matrix) obj;
-		if (!Arrays.deepEquals(data, other.data))
-			return false;
-		if (n != other.n)
-			return false;
-		return true;
-	}
-
-	public void prettyPrint() {
-		for (int i = 0; i < n; i++) {
-			StringBuilder sb = new StringBuilder();
-			for (int j = 0; j < n; j++) {
-				sb.append(data[i][j]);
-			}
-			System.out.println(sb.toString());
-		}
-	}
-
-	@Override
-	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < n; i++) {
-			for (int j = 0; j < n; j++) {
-				sb.append(data[i][j]);
-			}
-			if (i != n - 1) {
-				sb.append("/");
-			}
-		}
-		return sb.toString();
-	}
-
 }
